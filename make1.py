@@ -1,33 +1,34 @@
 import os
+import shutil
 
-# Define the source directory
-source_dir = "Materials_data"  # Replace with your actual path
+def find_and_duplicate_images(base_dir):
+    # Iterate through directories starting with "copy-1", "copy-2", etc.
+    for root, dirs, files in os.walk(base_dir):
+        base_dir_name = os.path.basename(root)
+        if base_dir_name.startswith("copy-") and base_dir_name[5:].isdigit():
+            prefix_number = base_dir_name.split('-')[1]  # Extract the number after "copy-"
+            for file in files:
+                if file.endswith(".png") or file.endswith(".jpg"):
+                    file_path = os.path.join(root, file)
 
-# Define the specific mappings for folder renaming
-specific_mappings = {
-    "10四": "14",
-    "10五": "15",
-    "10二": "12",
-    "10一": "11",
-    "10三": "13",
-}
+                    # Create folder name based on image name and prefix number
+                    file_name, file_ext = os.path.splitext(file)
+                    new_folder_name = f"{prefix_number}-{file_name}"
+                    new_folder_path = os.path.join(root, new_folder_name)
 
-# Iterate through all items in the source directory
-for folder in os.listdir(source_dir):
-    folder_path = os.path.join(source_dir, folder)
+                    # Create the folder if it doesn't exist
+                    os.makedirs(new_folder_path, exist_ok=True)
 
-    # Process only directories
-    if os.path.isdir(folder_path):
-        # Check if the folder name starts with any of the specific mappings
-        for prefix, new_prefix in specific_mappings.items():
-            if folder.startswith(prefix):
-                # Replace the prefix with the new value
-                new_folder_name = folder.replace(prefix, new_prefix, 1)
-                new_folder_path = os.path.join(source_dir, new_folder_name)
-                
-                # Rename the folder
-                os.rename(folder_path, new_folder_path)
-                print(f"Renamed: {folder} -> {new_folder_name}")
-                break
+                    # Copy the image 20 times into the new folder
+                    for i in range(1, 21):
+                        new_file_name = f"{file_name}-{i}{file_ext}"
+                        new_file_path = os.path.join(new_folder_path, new_file_name)
+                        shutil.copy(file_path, new_file_path)
+                    print(f"Processed: {file_path} -> {new_folder_path}")
 
-print("Folder renaming completed.")
+if __name__ == "__main__":
+    base_directory = "./Materials_data"
+    if os.path.exists(base_directory):
+        find_and_duplicate_images(base_directory)
+    else:
+        print("The specified directory does not exist.")
